@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Credit Score Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background: #e8f0f8;
+      color: #2b2b2b;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+    .slide {
+      display: none;
+    }
+    .slide.active {
+      display: block;
+    }
+    h2 {
+      color: #00bfa6;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      background-color: #00bfa6;
+      color: white;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 15px;
+      width: 100%;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f0f4f8;
+      border-radius: 10px;
+    }
+    .result p {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="slide active" id="slide1">
+      <h2>What is your income?</h2>
+      <label>Enter your monthly income:</label>
+      <input type="number" id="income" />
+      <button onclick="nextSlide(1)">Next</button>
+    </div>
+
+    <div class="slide" id="slide2">
+      <h2>What are your debts?</h2>
+      <label>Enter your total debts:</label>
+      <input type="number" id="debts" />
+      <p><small>Tip: Debts under 1000 are considered low. 1000–5000 is moderate. Above 5000 is high.</small></p>
+      <button onclick="nextSlide(2)">Next</button>
+    </div>
+
+    <div class="slide" id="slide3">
+      <h2>Your Credit History</h2>
+      <label>Enter your credit history (0–5):</label>
+      <input type="number" id="history" min="0" max="5" />
+      <p><small>Higher numbers indicate better credit history.</small></p>
+      <button onclick="calculateScore()">Calculate</button>
+    </div>
+
+    <div class="slide" id="slide4">
+      <h2>Calculation Breakdown</h2>
+      <div class="result" id="output"></div>
+      <button onclick="restart()">Restart</button>
+    </div>
+  </div>
+
+  <script>
+    function nextSlide(current) {
+      document.getElementById(`slide${current}`).classList.remove("active");
+      document.getElementById(`slide${current + 1}`).classList.add("active");
+    }
+
+    function restart() {
+      document.querySelectorAll(".slide").forEach(slide => slide.classList.remove("active"));
+      document.getElementById("slide1").classList.add("active");
+    }
+
+    function feistelEncrypt(value) {
+      let str = value.toString();
+      let mid = Math.floor(str.length / 2);
+      let left = str.slice(0, mid);
+      let right = str.slice(mid);
+      return right + left.split('').reverse().join('');
+    }
+
+    function feistelDecrypt(encrypted) {
+      let mid = Math.floor(encrypted.length / 2);
+      let right = encrypted.slice(0, mid);
+      let reversedLeft = encrypted.slice(mid).split('').reverse().join('');
+      return reversedLeft + right;
+    }
+
+    function calculateScore() {
+      const income = parseInt(document.getElementById("income").value);
+      const debts = parseInt(document.getElementById("debts").value);
+      const history = parseInt(document.getElementById("history").value);
+
+      // Encrypt
+      const encryptedIncome = feistelEncrypt(income);
+      const encryptedDebts = feistelEncrypt(debts);
+      const encryptedHistory = feistelEncrypt(history);
+
+      // Decrypt
+      const decryptedIncome = parseInt(feistelDecrypt(encryptedIncome));
+      const decryptedDebts = parseInt(feistelDecrypt(encryptedDebts));
+      const decryptedHistory = parseInt(feistelDecrypt(encryptedHistory));
+
+      // Score
+      const score = decryptedIncome - decryptedDebts + decryptedHistory * 50;
+
+      const breakdownHTML = `
+        <p><strong>Step 1:</strong> You entered:<br>
+        Income = ${income}, Debts = ${debts}, Credit History = ${history}</p>
+
+        <p><strong>Step 2:</strong> After Encryption:<br>
+        Income = ${encryptedIncome}, Debts = ${encryptedDebts}, History = ${encryptedHistory}</p>
+
+        <p><strong>Step 3:</strong> After Decryption:<br>
+        Income = ${decryptedIncome}, Debts = ${decryptedDebts}, History = ${decryptedHistory}</p>
+
+        <p><strong>Step 4:</strong> Score Calculation:<br>
+        ${decryptedIncome} - ${decryptedDebts} + (${decryptedHistory} × 50) = ${score}</p>
+
+        <p><strong>Final Credit Score:</strong> ${score}</p>
+      `;
+
+      document.getElementById("slide3").classList.remove("active");
+      document.getElementById("slide4").classList.add("active");
+      document.getElementById("output").innerHTML = breakdownHTML;
+    }
+  </script>
+</body>
+</html>
